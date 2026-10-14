@@ -1,0 +1,23 @@
+# Task Flow API systemd 서비스 (App 서버)
+# 설치 위치: /etc/systemd/system/task-flow-api.service
+# DB 접속 정보는 /opt/task-flow/.env에서 읽는다(backend/database.py). 이 파일에 값을 넣지 않는다.
+[Unit]
+Description=Task Flow API (FastAPI + uvicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=task-flow
+Group=task-flow
+WorkingDirectory=/opt/task-flow
+ExecStart=/opt/task-flow/.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

@@ -70,8 +70,13 @@
 - [x] T12: DB 서버 구성 후 App 서버에서 SELECT 1 확인.
   기록(2026-10-14): 사용자가 DB 서버 구성과 App 서버에서 SELECT 1 확인을 직접 진행하고 정상이라고 보고함. 저장소 코드 변경 없음.
   미기록: DB 서버 주소·버전, 접속 허용 범위, 사용자 권한 조정과 비밀번호 변경 여부, SELECT 1 실행 명령과 출력. 세부 결과는 확인되는 대로 보완한다.
-- [ ] T13: App 서버 코드·가상환경·환경변수·systemd 구성.
+- [x] T13: App 서버 코드·가상환경·환경변수·systemd 구성.
   확인: App에서 /api/health 응답.
+  준비(2026-10-14): deploy/task-flow-api.service(/opt/task-flow, task-flow 계정, 0.0.0.0:8000, Restart=on-failure), deploy/APP-SERVER.md(git archive 묶기·venv·.env 600·systemd·확인 절차) 작성. 코드 push 없이 git archive로 전달.
+  로컬 모의 확인: 묶음에 .venv·.env 미포함, 새 venv 설치 성공, 같은 명령(포트 8002)으로 /api/health 200·/api/tasks 200·/ 200. systemd-analyze verify 문법 오류 없음.
+  WSL 설치용 deploy/install-wsl.sh 추가(같은 구성, 패키지는 일반 사용자로 내려받아 오프라인 설치, 재실행 시 갱신·.env 유지).
+  결과(2026-10-14): 사용자가 App 서버에서 서비스 기동과 /api/health 응답을 직접 확인하고 정상이라고 보고함.
+  미기록: App 서버 주소, systemctl status 출력, curl 응답 원문, 서비스 재시작 후 응답 여부. 세부 결과는 확인되는 대로 보완한다.
 - [ ] T14: Web 서버 Nginx와 정적 파일·/api 프록시 구성.
   확인: Web 주소로 등록, DB 저장, App 재시작 후 유지.
 ## 실행 기준
