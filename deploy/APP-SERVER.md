@@ -8,10 +8,10 @@ App 서버에서 uvicorn을 systemd 서비스로 실행한다. DB는 T12에서 �
 - 필요: Python 3.10 이상, python3-venv
 
 ## 1. 코드 묶기 (개발 PC, 저장소 루트)
-.venv와 .env는 넣지 않는다. 필요한 경로만 지정해 묶는다.
+.venv와 .env는 넣지 않는다. 필요한 경로만 지정해 묶는다. 화면 파일(frontend)은 Web 서버에 둔다(T14).
 
 ```bash
-git archive -o task-flow.tar.gz HEAD backend frontend requirements.txt .env.example deploy
+git archive -o task-flow.tar.gz HEAD backend requirements.txt .env.example deploy
 scp task-flow.tar.gz <App서버계정>@<App서버주소>:/tmp/
 ```
 

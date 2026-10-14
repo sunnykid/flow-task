@@ -27,7 +27,7 @@ id task-flow >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/s
 
 step "코드 복사 (HEAD: $(as_user git -C "$REPO" log --oneline -1))"
 mkdir -p "$APP/deploy"
-as_user git -C "$REPO" archive HEAD backend frontend requirements.txt .env.example | tar -xf - -C "$APP"
+as_user git -C "$REPO" archive HEAD backend requirements.txt .env.example | tar -xf - -C "$APP"
 install -m 644 "$REPO/deploy/task-flow-api.service" "$APP/deploy/"
 
 step "패키지 내려받기 ($SUDO_USER 권한)"
