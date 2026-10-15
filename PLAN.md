@@ -94,8 +94,10 @@ EC2 3대(Web·App·DB)에 5장의 절차를 적용한다. 주소는 VPC 사설 I
   확인: Web 80은 외부 허용, App 8000은 Web 보안그룹만, DB 3306은 App 보안그룹만, SSH 22는 관리자 IP만 허용. 인스턴스 OS·유형과 사설 IP 대역을 기록한다.
   기록(2026-10-15): 사용자가 AWS에서 EC2 3대와 보안그룹 구성을 직접 진행하고 정상이라고 보고함. 저장소 코드 변경 없음. AWS 콘솔·자격증명은 사용하지 않아 직접 확인하지 않음.
   미기록: 인스턴스 OS·유형, 리전, VPC 사설 IP 대역, 보안그룹별 인바운드 규칙. 세부 결과는 확인되는 대로 보완한다(공인 IP·키 파일은 기록하지 않음).
-- [ ] T16: DB EC2에 MariaDB 설치, task_flow DB와 앱 전용 계정 생성, 사설 IP로 대기.
+- [x] T16: DB EC2에 MariaDB 설치, task_flow DB와 앱 전용 계정 생성, 사설 IP로 대기.
   확인: App EC2에서 SELECT 1 성공, Web EC2에서 3306 접속 실패. 앱 계정 권한(SHOW GRANTS) 기록.
+  기록(2026-10-15): 사용자가 DB EC2에 MariaDB 설치, task_flow DB·앱 전용 계정 생성, 사설 IP 대기 구성을 직접 진행하고 정상이라고 보고함. 저장소 코드 변경 없음. EC2에 접속하지 않아 직접 확인하지 않음.
+  미기록: MariaDB 버전, bind-address, 앱 계정의 접속 허용 호스트와 SHOW GRANTS 결과, App EC2의 SELECT 1 출력, Web EC2의 3306 접속 실패 출력. deploy/DB-SERVER.md 미작성. 세부 결과는 확인되는 대로 보완한다(비밀번호는 기록하지 않음).
 - [ ] T17: App EC2에 API 배포(deploy/APP-SERVER.md), .env의 DB_HOST를 DB 사설 IP로 설정, python -m backend.init_db 실행.
   확인: App에서 /api/health·/api/tasks 200, systemctl restart 후 응답, 외부에서 8000 접속 실패.
 - [ ] T18: Web EC2에 Nginx 배포(deploy/WEB-SERVER.md), APP_SERVER_ADDR를 App 사설 IP로 설정.
