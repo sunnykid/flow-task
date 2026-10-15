@@ -66,7 +66,8 @@
   실행: 포트 8001 uvicorn + urllib 스크립트. 31개 통과(등록·부분 수정·422·404·204, q·status·priority AND, q의 %·_ 글자 검색, 2000자 설명·이모지 저장).
   결과: 등록 행을 mariadb SELECT로 확인. API 재시작 후 같은 id·수정 내용 유지. 틀린 DB 비밀번호로 실행 시 /api/tasks 503, 로그에 비밀번호 미노출.
   테스트 항목([T11검증] 제목)은 확인 후 삭제해 tasks는 0행. AUTO_INCREMENT는 6부터 시작. 남은 오류 없음.
-## 5장: 서버 분리
+## 5장: 서버 분리 (WSL 리허설)
+WSL 한 대에서 Web·App·DB 역할을 나눠 설치 절차와 설정을 확인한다. 최종 배포는 6장에서 진행한다.
 - [x] T12: DB 서버 구성 후 App 서버에서 SELECT 1 확인.
   기록(2026-10-14): 사용자가 DB 서버 구성과 App 서버에서 SELECT 1 확인을 직접 진행하고 정상이라고 보고함. 저장소 코드 변경 없음.
   미기록: DB 서버 주소·버전, 접속 허용 범위, 사용자 권한 조정과 비밀번호 변경 여부, SELECT 1 실행 명령과 출력. 세부 결과는 확인되는 대로 보완한다.
@@ -77,18 +78,31 @@
   WSL 설치용 deploy/install-wsl.sh 추가(같은 구성, 패키지는 일반 사용자로 내려받아 오프라인 설치, 재실행 시 갱신·.env 유지).
   결과(2026-10-14): 사용자가 App 서버에서 서비스 기동과 /api/health 응답을 직접 확인하고 정상이라고 보고함.
   미기록: App 서버 주소, systemctl status 출력, curl 응답 원문, 서비스 재시작 후 응답 여부. 세부 결과는 확인되는 대로 보완한다.
-- [ ] T14: Web 서버 Nginx와 정적 파일·/api 프록시 구성.
+- [x] T14: Web 서버 Nginx와 정적 파일·/api 프록시 구성.
   확인: Web 주소로 등록, DB 저장, App 재시작 후 유지.
   준비(2026-10-14): deploy/task-flow-web.conf(80 default_server, /var/www/task-flow 정적 파일, /api/ → APP_SERVER_ADDR:8000 경로 유지 전달, 64k 본문 제한, server_tokens off·nosniff), deploy/WEB-SERVER.md(묶기·설치·설정·확인 절차), deploy/install-wsl-web.sh(WSL 설치용, 기본 App 주소 127.0.0.1, 기본 사이트 링크만 해제) 작성. 프런트엔드 코드 변경 없음.
   로컬 모의 확인: 일반 사용자 nginx 1.18(포트 8081, 같은 설정 파일에서 포트·경로·App 주소만 치환)로 nginx -t 통과. /·index.html·styles.css·app.js 200(MIME 정상), /api/health·/api/tasks 200(task-flow-api 서비스 응답), 없는 파일 404, 빈 제목 422 그대로 전달.
   Web 주소로 등록(HTML 포함 제목, 2000자 설명) → App 직접 조회에서 같은 행 확인, q·status·priority 쿼리 전달 확인, 삭제 204로 정리. App 연결 불가 시 /api 502·화면 200, 화면은 "요청을 처리하지 못했습니다. (HTTP 502)" 표시(app.js 기존 처리).
   변경(2026-10-14, 사용자 요청): 8000은 FastAPI API만 제공. backend/main.py의 frontend 정적 파일 제공(StaticFiles mount) 제거, API-SPEC.md 화면 제공 항목 갱신, App 서버 묶음(APP-SERVER.md·install-wsl.sh)에서 frontend 제외.
   확인: 저장소 코드로 uvicorn 8001 실행 시 /·index.html·app.js·styles.css 404, /api/health·/api/tasks·/docs 200. 모의 nginx(8081→8001)로 화면 200, 등록 201·PATCH 200·필터·삭제 204·재삭제 404.
-  남은 확인: sudo가 필요해 미실행. 시스템 Nginx 설치(install-wsl-web.sh 또는 WEB-SERVER.md), Web 주소로 등록, DB SELECT로 저장 확인, App 재시작 후 유지.
+  결과(2026-10-15): 사용자가 install-wsl.sh·install-wsl-web.sh 설치 후 Web 주소로 등록, DB 저장, App 재시작 후 유지를 직접 확인하고 정상이라고 보고함.
+  추가 확인(2026-10-15): task-flow-api(09:22 기동, 재시작 0회)·nginx active. http://127.0.0.1/·/api/health·/api/tasks 200, 127.0.0.1:8000/ 404. WSL 재기동 후에도 등록한 1건 조회됨.
+  미기록: DB SELECT 출력과 App 재시작 명령 출력 원문. 남은 오류 없음.
+## 6장: AWS 3-tier 배포
+EC2 3대(Web·App·DB)에 5장의 절차를 적용한다. 주소는 VPC 사설 IP를 쓰고 실제 값은 Git에 남기지 않는다.
+- [ ] T15: EC2 3대와 보안그룹 구성.
+  확인: Web 80은 외부 허용, App 8000은 Web 보안그룹만, DB 3306은 App 보안그룹만, SSH 22는 관리자 IP만 허용. 인스턴스 OS·유형과 사설 IP 대역을 기록한다.
+- [ ] T16: DB EC2에 MariaDB 설치, task_flow DB와 앱 전용 계정 생성, 사설 IP로 대기.
+  확인: App EC2에서 SELECT 1 성공, Web EC2에서 3306 접속 실패. 앱 계정 권한(SHOW GRANTS) 기록.
+- [ ] T17: App EC2에 API 배포(deploy/APP-SERVER.md), .env의 DB_HOST를 DB 사설 IP로 설정, python -m backend.init_db 실행.
+  확인: App에서 /api/health·/api/tasks 200, systemctl restart 후 응답, 외부에서 8000 접속 실패.
+- [ ] T18: Web EC2에 Nginx 배포(deploy/WEB-SERVER.md), APP_SERVER_ADDR를 App 사설 IP로 설정.
+  확인: 브라우저로 Web 공인 주소에서 등록·수정·삭제 취소·필터 중 수정, DB SELECT로 저장 확인, App 재시작 후 유지.
 ## 실행 기준
 T01~T04: python3 -m http.server 5500 --bind 127.0.0.1 --directory frontend
 T05~T11: 가상환경에서 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 T14 이후: uvicorn(8000)은 /api만 제공한다. 화면은 Nginx(sudo bash deploy/install-wsl-web.sh 후 http://localhost/)로 연다.
+T15~T18: AWS EC2 3대. 각 tier의 설치는 deploy/의 문서 절차를 따른다.
 실제 존재하는 파일을 확인한 뒤 명령을 실행한다.
 ## 기록
 각 작업에 변경 파일, 실행 명령, 실제 확인 결과, 남은 오류를 기록한다.

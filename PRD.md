@@ -25,9 +25,18 @@ id, title, description, status, priority, due_date, created_at을 사용한다.
 HTML/CSS/JavaScript, FastAPI, MariaDB, Nginx를 사용한다.
 React, Docker, Kubernetes는 추가하지 않는다.
 최종 배포는 Web·App·DB 서버의 역할을 분리한다.
+## 3-tier 배포
+WSL 한 대 구성(T12~T14)은 리허설이다. 최종 배포는 AWS EC2 3대에 tier별로 나눈다.
+- Web(frontend): Nginx가 frontend/ 정적 파일을 제공하고 /api/를 App으로 전달한다. 외부 공개는 Web의 80뿐이다.
+- App(backend): FastAPI(uvicorn)를 systemd로 실행하고 /api만 제공한다. 8000은 Web에서만 접속한다.
+- DB(db): MariaDB를 실행한다. 3306은 App에서만 접속한다. 앱 계정은 task_flow DB에 필요한 권한만 갖는다.
+- tier 간 통신은 VPC 사설 IP를 쓰고 보안그룹으로 허용 출발지를 제한한다. SSH는 관리자 IP에서만 허용한다.
+- DB 접속 정보는 App의 .env(권한 600)에만 두고, AWS 자격증명·키 파일은 저장소에 넣지 않는다.
+- WSL의 데이터는 자동 이전하지 않는다. 샘플 데이터를 다시 등록한다.
 ## 제외 기능
 회원가입, 팀 공유, 알림, 파일 첨부, 자동 데이터 이전은 구현하지 않는다.
 ## 완료 기준
 정상 입력 등록, 빈 제목 거절, 수정, 삭제 취소, 필터 중 정확한 항목 수정이 가능하다.
 DB 단계에서 API를 재시작해도 데이터가 유지된다.
+3-tier 배포에서 Web 공인 주소로 위 기능이 동작하고, 외부에서 App 8000과 DB 3306에 직접 접속되지 않는다.
 사용자 입력은 HTML 실행 없이 글자로 표시한다.
